@@ -9,11 +9,13 @@ L = 50  # Length of the thruster (in cm)
 a = 10  # Length of a side of thruster's cross-section (in cm)
 V0 = 12  # Voltage (in V)
 N = 100  # Discretization of the space dimensions
+Nt = 1000
 x = np.linspace(0, L, N)
 y = np.linspace(0, a, N)
+t_obs = 10 # Observation time in seconds
 h_x = (L * 1e-2) / N
 h_y = (a * 1e-2) / N
-
+h_t = t_obs / Nt
 
 class particle:
     def __init__(self, N):
@@ -104,9 +106,26 @@ def calculate_E(V, plot=False):
         im = e_viewer.imshow(E, extent=(0, L, 0, a))
         plt.colorbar(im)
         plt.show()
+    return E
 
+def MaxwellFaraday(B, E, plot=False):
+    newB = np.zeros_like(E)
+    newB[1:N, :N - 1] = B[1:N, :N - 1] - (h_t / h_x) * (E[1:N, :N - 1] - E[:N-1, :N - 1]) + (h_t / h_y) * (E[1:N, 1:N] - E[:N-1, :N - 1])
+
+    if plot:
+        fig = plt.figure()
+        e_viewer = fig.add_subplot(111)
+        e_viewer.set_title('Electric field in space')
+        e_viewer.set_xlabel('x (in cm)')
+        e_viewer.set_ylabel('y (in cm)')
+
+        im = e_viewer.imshow(newB, extent=(0, L, 0, a))
+        plt.colorbar(im)
+        plt.show()
+
+B = np.ones((N, N))
 particles = [Cation(N) for i in range(10)]
 pot = solve_poisson(particles)
-calculate_E(pot, plot=True)
-
+E = calculate_E(pot)
+MaxwellFaraday(B, E, plot=True)
 
