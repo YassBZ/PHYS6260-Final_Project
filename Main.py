@@ -89,9 +89,24 @@ def solve_poisson(particles, plot=False):
         plt.show()
     return V
 
+def calculate_E(V, plot=False):
+    E = np.zeros_like(V)
+    E[:, 1:-1] = - (V[:, 2:] - V[:, :-2]) / (2 * h_x)
+    E[1:-1, :] = -(V[2:, :] - V[:-2, :]) / (2 * h_y)
+
+    if plot:
+        fig = plt.figure()
+        e_viewer = fig.add_subplot(111)
+        e_viewer.set_title('Electric field in space')
+        e_viewer.set_xlabel('x (in cm)')
+        e_viewer.set_ylabel('y (in cm)')
+
+        im = e_viewer.imshow(E, extent=(0, L, 0, a))
+        plt.colorbar(im)
+        plt.show()
+
 particles = [Cation(N) for i in range(10)]
-solve_poisson(particles)
-
-
+pot = solve_poisson(particles)
+calculate_E(pot, plot=True)
 
 
